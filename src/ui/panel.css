@@ -195,11 +195,13 @@ button:focus-visible {
   bottom: 94px;
   right: 22px;
   z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
   width: min(748px, calc(100vw - 30px));
   max-height: calc(100vh - 115px);
   overflow: auto;
   scrollbar-width: thin;
-  padding: 20px 22px 18px;
+  padding: 16px 20px 14px;
   border-radius: 24px;
   background: var(--panel-bg);
   border: 1px solid var(--border);
@@ -269,6 +271,7 @@ button:focus-visible {
 }
 
 .headline {
+  flex: none;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -319,14 +322,23 @@ button:focus-visible {
   color: var(--text);
 }
 
+.subbar {
+  flex: none;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .legend {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   color: var(--text-muted);
   font-size: 11.5px;
   font-weight: 500;
-  margin: 14px 0 8px;
 }
 
 .dot {
@@ -345,13 +357,17 @@ button:focus-visible {
 }
 
 .table-scroll {
+  margin-top: 8px;
+  flex: 1 1 auto;
+  min-height: 112px;
+  overflow: auto;
   scrollbar-width: thin;
 }
 
 .periodic {
   display: grid;
   grid-template-columns: repeat(18, minmax(0, 1fr));
-  grid-template-rows: repeat(7, 38px) 8px repeat(2, 38px);
+  grid-template-rows: repeat(7, 33px) 6px repeat(2, 33px);
   gap: 3px;
   min-width: 520px;
   padding: 4px;
@@ -386,18 +402,18 @@ div.atom.disabled {
 }
 
 .atom .anum {
-  font-size: 8px;
+  font-size: 7.5px;
   font-variant-numeric: tabular-nums;
   position: absolute;
   left: 3.5px;
-  top: 3px;
+  top: 2.5px;
   opacity: 0.72;
 }
 
 .atom .sym {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 600;
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
 .atom.active {
@@ -452,7 +468,6 @@ div.atom.disabled {
 }
 
 .extra {
-  margin-top: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -470,7 +485,7 @@ div.atom.disabled {
   border: 1px solid var(--border);
   background: var(--surface-subtle);
   color: var(--text-secondary);
-  padding: 5px 12px;
+  padding: 4px 11px;
   border-radius: 999px;
   font-size: 11.5px;
   font-weight: 500;
@@ -483,8 +498,9 @@ div.atom.disabled {
 }
 
 .detail {
-  margin-top: 14px;
-  padding: 12px 14px;
+  flex: none;
+  margin-top: 10px;
+  padding: 10px 13px;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--surface-subtle);

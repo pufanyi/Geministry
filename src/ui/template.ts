@@ -23,18 +23,20 @@ export const panelMarkup = `
     </svg>
   </button>
 </div>
-<div class="legend">
-  <span><i class="dot"></i>Released</span>
-  <span><i class="dot off"></i>Coming soon™</span>
-</div>
 <div class="table-scroll">
   <div class="periodic"></div>
 </div>
-<div class="extra">
-  <span class="extra-label">Other models</span>
-  <button class="other" type="button" data-other="Flash-Lite">Flash-Lite</button>
-  <button class="other" type="button" data-other="Pro">Pro</button>
-  <button class="other" type="button" data-other="Auto">Auto</button>
+<div class="subbar">
+  <div class="extra">
+    <span class="extra-label">Other models</span>
+    <button class="other" type="button" data-other="Flash-Lite">Flash-Lite</button>
+    <button class="other" type="button" data-other="Pro">Pro</button>
+    <button class="other" type="button" data-other="Auto">Auto</button>
+  </div>
+  <div class="legend">
+    <span><i class="dot"></i>Released</span>
+    <span><i class="dot off"></i>Coming soon™</span>
+  </div>
 </div>
 <div class="detail">
   <div class="hero">

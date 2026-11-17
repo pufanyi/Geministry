@@ -5,34 +5,76 @@ const visible = (el: Element) =>
 const clean = (s: string | null | undefined) =>
   (s || '').replace(/\s+/g, ' ').trim();
 
+const ICON_LIGATURE_RE =
+  /\b(?:keyboard_arrow_down|expand_more|arrow_drop_down|chevron_down|stat_minus_1|unfold_more)\b/gi;
+const SKIP_SELECTOR =
+  'svg,mat-icon,.mat-icon,.google-symbols,.material-icons,[class*="material-symbols"],[aria-hidden="true"],.cdk-visually-hidden,.sr-only,.visually-hidden';
+
 function renderedText(element: HTMLElement): string {
   // biome-ignore lint/performance/useDomNodeTextContent: Match visible Gemini menu labels, excluding hidden descriptive text.
   return clean(element.innerText || element.textContent);
 }
 
+function buttonLabel(element: HTMLElement): string {
+  const parts: string[] = [];
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.textContent) parts.push(node.textContent);
+      return;
+    }
+    if (!(node instanceof Element)) return;
+    if (node.matches(SKIP_SELECTOR)) return;
+    const style = getComputedStyle(node);
+    if (style.display === 'none' || style.visibility === 'hidden') return;
+    for (const child of node.childNodes) walk(child);
+  };
+  walk(element);
+  return clean(parts.join(' ').replace(ICON_LIGATURE_RE, ' '));
+}
+
+const MODEL_TRIGGER_RE =
+  /^(?:gemini(?:\s*\d+(?:\.\d+)?)?\s+)?(?:Hydrogen|Carbon|Argon|Auto|Flash-Lite|(?:3\.1\s*)?Pro)(?:\s*[⌄▼▾∨])?$/i;
+const PICKER_LABEL_RE =
+  /^(?:open\s+)?(?:choose|select|change|switch)\s+(?:a\s+)?(?:model|mode)(?:\s+(?:picker|menu|selector))?$/i;
+const PICKER_TITLE_RE = /^(?:model|mode)\s+(?:picker|selector|menu)$/i;
+const PICKER_NAMED_RE =
+  /^(?:(?:current|selected)\s+)?(?:model|mode)\s*:\s*(?:Hydrogen|Carbon|Argon|Auto|Flash-Lite|(?:3\.1\s*)?Pro)$/i;
+const PICKER_COMMA_RE =
+  /^(?:Hydrogen|Carbon|Argon|Auto|Flash-Lite|(?:3\.1\s*)?Pro)\s*,\s*(?:model|mode)(?:\s+(?:picker|selector|menu))?$/i;
+const PICKER_ZH_RE = /^(?:选择|切换|更改)模型$/;
+
+const TRIGGER_SELECTOR = 'button,[role="button"],[role="combobox"]';
+
 export function getNativeSelector(target: Element): HTMLElement | null {
-  const t = target.closest('button,[role="button"]');
+  const t = target.closest(TRIGGER_SELECTOR);
   if (
     !(t instanceof HTMLElement) ||
     !visible(t) ||
     t.closest(
-      '[role="menu"],[role="listbox"],[role="menuitem"],[role="option"]',
+      '[role="menu"],[role="listbox"],[role="menuitem"],[role="option"],mat-option',
     )
   )
     return null;
-  const labels = [renderedText(t), clean(t.getAttribute('aria-label'))];
+  const labels = [
+    buttonLabel(t),
+    renderedText(t).replace(ICON_LIGATURE_RE, ' ').trim(),
+    clean(t.getAttribute('aria-label')),
+  ].filter(Boolean);
   return labels.some(
     (text) =>
-      /^(?:Hydrogen|Carbon|Argon|Auto|Flash-Lite|3\.1 Pro)(?:\s*[⌄▼▾])?$/i.test(
-        text,
-      ) || /^(?:choose|select|change)\s+model$/i.test(text),
+      MODEL_TRIGGER_RE.test(text) ||
+      PICKER_LABEL_RE.test(text) ||
+      PICKER_TITLE_RE.test(text) ||
+      PICKER_NAMED_RE.test(text) ||
+      PICKER_COMMA_RE.test(text) ||
+      PICKER_ZH_RE.test(text),
   )
     ? t
     : null;
 }
 
 export function findNativeSelector(): HTMLElement | null {
-  for (const button of document.querySelectorAll('button,[role="button"]')) {
+  for (const button of document.querySelectorAll(TRIGGER_SELECTOR)) {
     const selector = getNativeSelector(button);
     if (selector) return selector;
   }

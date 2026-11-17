@@ -122,6 +122,10 @@ export function mountPeriodicTable() {
     panel.style.left = `${Math.max(edge, Math.min(rect.right - panel.offsetWidth, innerWidth - panel.offsetWidth - edge))}px`;
     panel.style.top = `${opensBelow ? rect.bottom + gap : rect.top - gap - panel.offsetHeight}px`;
   };
+  const refreshLauncher = () => {
+    launcher.classList.toggle('hidden', shown || !!findNativeSelector());
+    positionPanel();
+  };
   const open = (trigger: HTMLElement | null = findNativeSelector()) => {
     anchor = trigger;
     returnFocus =
@@ -131,7 +135,7 @@ export function mountPeriodicTable() {
     panel.classList.remove('hidden');
     scrim.classList.toggle('hidden', !!anchor);
     launcher.setAttribute('aria-expanded', 'true');
-    positionPanel();
+    refreshLauncher();
     query(panel, '.close').focus({ preventScroll: true });
   };
   const close = (restoreFocus = true) => {
@@ -141,9 +145,10 @@ export function mountPeriodicTable() {
     launcher.setAttribute('aria-expanded', 'false');
     panel.classList.remove('anchored');
     panel.removeAttribute('style');
+    anchor = null;
+    refreshLauncher();
     if (restoreFocus && returnFocus?.isConnected)
       returnFocus.focus({ preventScroll: true });
-    anchor = null;
   };
   launcher.addEventListener('click', () => (shown ? close() : open()));
   scrim.addEventListener('click', () => close());
@@ -229,10 +234,6 @@ export function mountPeriodicTable() {
   window.addEventListener('resize', positionPanel);
   document.addEventListener('scroll', positionPanel, true);
   new ResizeObserver(positionPanel).observe(panel);
-  const refreshLauncher = () => {
-    launcher.classList.toggle('hidden', !!findNativeSelector());
-    positionPanel();
-  };
   let refreshPending = false;
   const observer = new MutationObserver(() => {
     if (refreshPending) return;

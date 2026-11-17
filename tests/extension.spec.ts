@@ -222,3 +222,39 @@ test('adapts to light and dark mode from media preference and page theme', async
   });
   await expect(host).toHaveAttribute('data-theme', 'dark');
 });
+
+test('recognizes Gemini selectors with Material icon ligatures or combobox roles', async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    const trigger = document.createElement('button');
+    trigger.id = 'mat-selector';
+    trigger.setAttribute('aria-label', 'Open mode picker');
+    trigger.innerHTML =
+      '<span>Hydrogen</span><span class="google-symbols">keyboard_arrow_down</span>';
+    trigger.style.cssText = 'position:fixed;top:40%;right:30%;height:40px';
+    document.body.append(trigger);
+  });
+  const panel = page.locator('.panel');
+  await expect(page.locator('.launcher')).toBeHidden();
+  await page.locator('#mat-selector').click();
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveClass('panel anchored');
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
+
+  await page.evaluate(() => {
+    document.querySelector('#mat-selector')?.remove();
+    const combo = document.createElement('div');
+    combo.id = 'combo-selector';
+    combo.setAttribute('role', 'combobox');
+    combo.tabIndex = 0;
+    combo.innerHTML = '<span>Hydrogen</span><span>expand_more</span>';
+    combo.style.cssText = 'position:fixed;top:40%;right:30%;height:40px';
+    document.body.append(combo);
+  });
+  await expect(page.locator('.launcher')).toBeHidden();
+  await page.locator('#combo-selector').click();
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveClass('panel anchored');
+});
