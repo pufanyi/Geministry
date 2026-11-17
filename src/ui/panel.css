@@ -50,6 +50,10 @@ button {
   box-shadow: 0 20px 70px #000a;
   color: #eee;
 }
+.panel.anchored {
+  right: auto;
+  bottom: auto;
+}
 @media (prefers-reduced-motion: no-preference) {
   .launcher {
     transition: transform 0.2s;

@@ -10,17 +10,33 @@ function renderedText(element: HTMLElement): string {
   return clean(element.innerText || element.textContent);
 }
 
-export function isNativeSelector(target: Element): boolean {
+export function getNativeSelector(target: Element): HTMLElement | null {
   const t = target.closest('button,[role="button"]');
-  if (!(t instanceof HTMLElement) || !visible(t)) return false;
-  const text = `${renderedText(t)} ${clean(t.getAttribute('aria-label'))}`;
-  const rect = t.getBoundingClientRect();
-  if (rect.top < innerHeight * 0.45 || text.length > 95) return false;
-  return (
-    /^(?:Hydrogen|Carbon|Argon|Flash-Lite|3\.1 Pro)(?:\s*[⌄▼▾])?\s*$/i.test(
-      text,
-    ) || /^(?:choose|select|change)\s+model$/i.test(text)
-  );
+  if (
+    !(t instanceof HTMLElement) ||
+    !visible(t) ||
+    t.closest(
+      '[role="menu"],[role="listbox"],[role="menuitem"],[role="option"]',
+    )
+  )
+    return null;
+  const labels = [renderedText(t), clean(t.getAttribute('aria-label'))];
+  return labels.some(
+    (text) =>
+      /^(?:Hydrogen|Carbon|Argon|Auto|Flash-Lite|3\.1 Pro)(?:\s*[⌄▼▾])?$/i.test(
+        text,
+      ) || /^(?:choose|select|change)\s+model$/i.test(text),
+  )
+    ? t
+    : null;
+}
+
+export function findNativeSelector(): HTMLElement | null {
+  for (const button of document.querySelectorAll('button,[role="button"]')) {
+    const selector = getNativeSelector(button);
+    if (selector) return selector;
+  }
+  return null;
 }
 
 export function createNativeMenu(
@@ -56,6 +72,8 @@ export function createNativeMenu(
     return true;
   };
   function nativeTrigger() {
+    const selector = findNativeSelector();
+    if (selector) return selector;
     const list = candidates();
     const named = list.filter((el) => {
       const name = `${renderedText(el)} ${clean(el.getAttribute('aria-label'))}`;
