@@ -124,21 +124,21 @@ export const models = {
     number: 1,
     subtitle: 'Everyday help',
     joke: 'The lightest element. The heaviest tabs.',
-    color: '#83afff',
+    color: '#4285f4',
   },
   C: {
     name: 'Carbon',
     number: 6,
     subtitle: 'Deep reasoning',
     joke: 'Carbon-based intelligence, allegedly.',
-    color: '#ce9dff',
+    color: '#9b6bf2',
   },
   Ar: {
     name: 'Argon',
     number: 18,
     subtitle: 'Complex workflows',
     joke: 'Noble gas. Questionable decisions.',
-    color: '#73e2cf',
+    color: '#14b8a6',
   },
 };
 export type ModelSymbol = keyof typeof models;

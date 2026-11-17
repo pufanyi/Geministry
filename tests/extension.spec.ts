@@ -194,3 +194,31 @@ test('flips above a low selector and restores the launcher after SPA removal', a
   await expect(panel).toBeHidden();
   await expect(page.locator('.launcher')).toBeVisible();
 });
+
+test('adapts to light and dark mode from media preference and page theme', async ({
+  page,
+}) => {
+  const host = page.locator('#gpt-periodic-host');
+  const panel = page.locator('.panel');
+
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(host).toHaveAttribute('data-theme', 'light');
+  await page.locator('.launcher').click();
+  await expect(panel).toHaveCSS('color-scheme', 'light');
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(host).toHaveAttribute('data-theme', 'dark');
+  await expect(panel).toHaveCSS('color-scheme', 'dark');
+
+  await page.evaluate(() => {
+    document.body.classList.add('light-theme');
+  });
+  await expect(host).toHaveAttribute('data-theme', 'light');
+  await expect(panel).toHaveCSS('color-scheme', 'light');
+
+  await page.evaluate(() => {
+    document.body.classList.remove('light-theme');
+    document.body.style.backgroundColor = 'rgb(19, 19, 20)';
+  });
+  await expect(host).toHaveAttribute('data-theme', 'dark');
+});

@@ -12,17 +12,21 @@ import {
 } from '../gemini/native-menu';
 import { create, query } from './dom';
 import styles from './panel.css';
-import { panelMarkup } from './template';
+import { launcherIcon, panelMarkup } from './template';
+import { syncTheme } from './theme';
 
 export function mountPeriodicTable() {
   const host = create('div');
   host.id = 'gpt-periodic-host';
   document.documentElement.appendChild(host);
+  syncTheme(host);
   const shadow = host.attachShadow({ mode: 'open', delegatesFocus: true });
   const style = create('style');
   style.textContent = styles;
   shadow.appendChild(style);
-  const launcher = create('button', 'launcher', '⚛');
+  const launcher = create('button', 'launcher');
+  launcher.type = 'button';
+  launcher.innerHTML = launcherIcon;
   launcher.title = 'Gemini Periodic Table (Alt+Shift+P)';
   launcher.setAttribute('aria-label', 'Open Gemini Periodic Table');
   launcher.setAttribute('aria-expanded', 'false');
@@ -86,8 +90,9 @@ export function mountPeriodicTable() {
     chosen = symbol;
     const m = models[symbol];
     query(panel, '.symbol').textContent = symbol;
-    query(panel, '.symbol').style.setProperty('--c', m.color);
+    query(panel, '.detail').style.setProperty('--c', m.color);
     query(panel, '.detail-title').textContent = `Gemini 4 ${m.name}`;
+    query(panel, '.detail-tag').textContent = m.subtitle;
     query(panel, '.joke').textContent = m.joke;
     grid.querySelectorAll('.active').forEach((el) => {
       el.classList.toggle('selected', query(el, '.sym').textContent === symbol);
