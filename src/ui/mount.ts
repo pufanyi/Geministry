@@ -5,7 +5,11 @@ import {
   position,
   symbols,
 } from '../data/elements';
-import { createNativeMenu, isNativeSelector } from '../gemini/native-menu';
+import {
+  createNativeMenu,
+  findNativeSelector,
+  getNativeSelector,
+} from '../gemini/native-menu';
 import { create, query } from './dom';
 import styles from './panel.css';
 import { panelMarkup } from './template';
@@ -21,6 +25,7 @@ export function mountPeriodicTable() {
   const launcher = create('button', 'launcher', '⚛');
   launcher.title = 'Gemini Periodic Table (Alt+Shift+P)';
   launcher.setAttribute('aria-label', 'Open Gemini Periodic Table');
+  launcher.setAttribute('aria-expanded', 'false');
   const scrim = create('div', 'scrim hidden');
   const panel = create('section', 'panel hidden');
   panel.setAttribute('role', 'dialog');
@@ -93,21 +98,51 @@ export function mountPeriodicTable() {
   };
 
   const nativeMenu = createNativeMenu(host, setStatus);
-  const open = () => {
-    shown = true;
-    panel.classList.remove('hidden');
-    scrim.classList.remove('hidden');
-    launcher.setAttribute('aria-expanded', 'true');
+  let anchor: HTMLElement | null = null;
+  let returnFocus: HTMLElement | null = null;
+  const positionPanel = () => {
+    if (!shown || !anchor) return;
+    if (!anchor.isConnected || !anchor.getClientRects().length) {
+      close(false);
+      return;
+    }
+    const rect = anchor.getBoundingClientRect();
+    const gap = 8;
+    const edge = 15;
+    const below = Math.max(0, innerHeight - rect.bottom - gap - edge);
+    const above = Math.max(0, rect.top - gap - edge);
+    const opensBelow =
+      below >= Math.min(panel.scrollHeight, 420) || below >= above;
+    panel.style.maxHeight = `${opensBelow ? below : above}px`;
+    panel.style.left = `${Math.max(edge, Math.min(rect.right - panel.offsetWidth, innerWidth - panel.offsetWidth - edge))}px`;
+    panel.style.top = `${opensBelow ? rect.bottom + gap : rect.top - gap - panel.offsetHeight}px`;
   };
-  const close = () => {
+  const open = (trigger: HTMLElement | null = findNativeSelector()) => {
+    anchor = trigger;
+    returnFocus =
+      trigger || (shadow.activeElement as HTMLElement | null) || launcher;
+    shown = true;
+    panel.classList.toggle('anchored', !!anchor);
+    panel.classList.remove('hidden');
+    scrim.classList.toggle('hidden', !!anchor);
+    launcher.setAttribute('aria-expanded', 'true');
+    positionPanel();
+    query(panel, '.close').focus({ preventScroll: true });
+  };
+  const close = (restoreFocus = true) => {
     shown = false;
     panel.classList.add('hidden');
     scrim.classList.add('hidden');
     launcher.setAttribute('aria-expanded', 'false');
+    panel.classList.remove('anchored');
+    panel.removeAttribute('style');
+    if (restoreFocus && returnFocus?.isConnected)
+      returnFocus.focus({ preventScroll: true });
+    anchor = null;
   };
   launcher.addEventListener('click', () => (shown ? close() : open()));
-  scrim.addEventListener('click', close);
-  query(panel, '.close').addEventListener('click', close);
+  scrim.addEventListener('click', () => close());
+  query(panel, '.close').addEventListener('click', () => close());
   query(panel, '.action').addEventListener('click', () =>
     nativeMenu.apply(models[chosen].name, level),
   );
@@ -134,29 +169,81 @@ export function mountPeriodicTable() {
       if (ev.altKey && ev.shiftKey && ev.code === 'KeyP') {
         ev.preventDefault();
         shown ? close() : open();
-      } else if (ev.key === 'Escape' && shown) close();
+      } else if (ev.key === 'Escape' && shown) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        close();
+      } else if (
+        !nativeMenu.isOpening() &&
+        ev.target instanceof Element &&
+        !host.contains(ev.target) &&
+        (ev.key === 'Enter' || ev.key === ' ') &&
+        getNativeSelector(ev.target)
+      ) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        shown ? close() : open(getNativeSelector(ev.target));
+      }
     },
     true,
   );
-  // Native selector hook is deliberately conservative; floating ⚛ always works as a fallback.
+  // Block Gemini's own menu handlers, except while applying a native selection.
+  document.addEventListener(
+    'pointerdown',
+    (ev) => {
+      if (
+        !nativeMenu.isOpening() &&
+        ev.target instanceof Element &&
+        !host.contains(ev.target) &&
+        getNativeSelector(ev.target)
+      ) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+      }
+    },
+    true,
+  );
   document.addEventListener(
     'click',
     (ev) => {
       if (
         !(ev.target instanceof Element) ||
-        shown ||
         nativeMenu.isOpening() ||
         host.contains(ev.target)
       )
         return;
-      if (isNativeSelector(ev.target)) {
-        // Let Gemini process its own click; our overlay covers the native menu.
-        setTimeout(() => {
-          if (!shown && !nativeMenu.isOpening()) open();
-        }, 50);
-      }
+      const trigger = getNativeSelector(ev.target);
+      if (trigger) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        shown ? close() : open(trigger);
+      } else if (shown) close(false);
     },
     true,
   );
+  window.addEventListener('resize', positionPanel);
+  document.addEventListener('scroll', positionPanel, true);
+  new ResizeObserver(positionPanel).observe(panel);
+  const refreshLauncher = () => {
+    launcher.classList.toggle('hidden', !!findNativeSelector());
+    positionPanel();
+  };
+  let refreshPending = false;
+  const observer = new MutationObserver(() => {
+    if (refreshPending) return;
+    refreshPending = true;
+    requestAnimationFrame(() => {
+      refreshPending = false;
+      refreshLauncher();
+    });
+  });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ['aria-label', 'class', 'style', 'hidden'],
+  });
+  refreshLauncher();
   selectSymbol('H');
 }
