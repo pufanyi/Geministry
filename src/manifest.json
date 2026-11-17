@@ -1,9 +1,0 @@
-{
-  "manifest_version": 3,
-  "name": "Gemini Periodic Table 🧪",
-  "version": "0.1.0",
-  "description": "The periodic table, but Google keeps releasing new elements. A silly model picker for Gemini.",
-  "icons": {"16":"icon16.png","48":"icon48.png","128":"icon128.png"},
-  "content_scripts": [{"matches":["https://gemini.google.com/*"],"js":["content.js"],"run_at":"document_idle"}],
-  "permissions": []
-}

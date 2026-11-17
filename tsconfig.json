@@ -2,15 +2,15 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
-    "moduleDetection": "legacy",
+    "moduleDetection": "force",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": [],
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "noEmitOnError": true,
     "rootDir": "src",
-    "outDir": "dist",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "moduleResolution": "bundler"
   },
   "include": ["src/**/*.ts"]
 }
