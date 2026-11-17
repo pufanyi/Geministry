@@ -4,10 +4,10 @@ An unofficial, silly Chrome extension that turns Gemini's model selection into a
 
 ## Install (unpacked)
 
-1. Extract the ZIP.
+1. Run `pnpm install` and `pnpm build` from the repository root.
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode**.
-4. Click **Load unpacked** and choose the extracted `gemini-periodic-table` folder.
+4. Click **Load unpacked** and choose the generated `dist/` folder.
 5. Open or refresh https://gemini.google.com/.
 6. Click the floating **⚛** icon (or press **Alt+Shift+P**) to open the table. Clicking Gemini's own model selector may also open the table.
 
@@ -29,7 +29,7 @@ No browser permissions, no analytics, no remote requests, no backend.
 ## Files
 
 - `manifest.json` — Manifest V3
-- `content.js` — self-contained UI and selection heuristics
+- `content.ts` — typed, self-contained UI and selection heuristics; compiled to `dist/content.js`
 - `icon*.png` — icons
 
 ## Not affiliated with Google

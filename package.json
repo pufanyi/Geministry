@@ -1,0 +1,14 @@
+{
+  "name": "geministry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "tsc && node scripts/copy-assets.mjs",
+    "dev": "node scripts/copy-assets.mjs && tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
