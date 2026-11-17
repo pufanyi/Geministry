@@ -28,9 +28,12 @@ No browser permissions, no analytics, no remote requests, no backend.
 
 ## Files
 
-- `manifest.json` — Manifest V3
-- `content.ts` — typed, self-contained UI and selection heuristics; compiled to `dist/content.js`
-- `icon*.png` — icons
+- `public/manifest.json` — Manifest V3 configuration
+- `src/content.ts` — entry point; UI, data, and native-menu logic live in separate modules
+- `public/icon*.png` — icons
+- `dist/` — generated extension, including the bundled `content.js`
+
+See [the repository README](../README.md) for development commands and module boundaries.
 
 ## Not affiliated with Google
 
